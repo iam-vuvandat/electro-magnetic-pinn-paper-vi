@@ -1,0 +1,154 @@
+\section{Triển khai số}
+\subsection{Phương trình cân bằng từ thông tại nút}
+Định luật Gauss cho từ trường trên phần tử $E_{i,j,k}$ với mặt biên kín $\partial E_{i,j,k}$ được biểu diễn bởi:
+
+\begin{equation}
+    \oint_{\partial E_{i,j,k}} \mathbf{B} \cdot \mathrm{d}\mathbf{A} = 0
+\end{equation}
+
+Rời rạc hóa tích phân trên 6 mặt ranh giới ứng với các trục $s \in \{r, \theta, z\}$ và hướng $d \in \{0, 1\}$, phương trình cân bằng từ thông tại nút thế trung tâm $P_{i,j,k}$ được xác định bởi:
+\begin{equation}
+    \sum_{\substack{s \in \{r, \theta, z\} \\ d \in \{0, 1\}}} (-1)^{d+1} \cdot \phi_{s,d,i,j,k} = 0
+    \label{eq_gauss}
+\end{equation}
+trong đó $\phi_{s,d,i,j,k}$ là từ thông đi qua nhánh nội tại tương ứng.
+
+Để xác định dòng thông lượng, trước hết ta thiết lập các thông số vật lý tương đương trên nhánh nối giữa nút $P_{i,j,k}$ và nút lân cận $P_{i',j',k'}$. Tọa độ nút lân cận theo các phương $s$ lần lượt là $(i + (-1)^{d+1}, j, k)$, $(i, j + (-1)^{d+1}, k)$, và $(i, j, k + (-1)^{d+1})$. Từ trở và nguồn sức từ động tương đương trên mỗi nhánh được xác định bởi tổng các thành phần nội tại từ hai phần tử tiếp giáp:
+\begin{equation}
+    R_{eq,s,d,i,j,k} = R_{s,d,i,j,k} + R_{s,1-d,i',j',k'}
+\end{equation}
+\begin{equation}
+    F_{eq,s,d,i,j,k} = F_{s,d,i,j,k} + F_{s,1-d,i',j',k'}
+\end{equation}
+
+Dựa trên các giá trị vật lý nêu trên, độ dẫn từ tương đương và nguồn từ thông tương đương trên nhánh lần lượt được định nghĩa thông qua các biểu thức sau:
+\begin{equation}
+    G_{eq,s,d,i,j,k} = \frac{1}{R_{eq,s,d,i,j,k}}
+\end{equation}
+\begin{equation}
+    J_{eq,s,d,i,j,k} = G_{eq,s,d,i,j,k} \cdot F_{eq,s,d,i,j,k}
+\end{equation}
+
+Khi đó, thông lượng $\phi_{s,d,i,j,k}$ chạy trên nhánh được biểu diễn ngắn gọn như sau:
+\begin{equation}
+    \phi_{s,d,i,j,k} = G_{eq,s,d,i,j,k} (P_{i,j,k} - P_{i',j',k'})(-1)^d + J_{eq,s,d,i,j,k}
+    \label{eq_phi}
+\end{equation}
+
+Thay thế \eqref{eq_phi} vào \eqref{eq_gauss} và chuyển vế các thành phần nguồn, phương trình thế nút tại $P_{i,j,k}$ được biểu diễn bởi:
+\begin{equation}
+\begin{aligned}
+    \sum_{\substack{s \in \{r, \theta, z\} \\ d \in \{0, 1\}}} & G_{eq,s,d,i,j,k} (P_{i,j,k} - P_{i',j',k'}) = \\
+    & \sum_{\substack{s \in \{r, \theta, z\} \\ d \in \{0, 1\}}} (-1)^{d+1} \cdot J_{eq,s,d,i,j,k}
+\end{aligned}
+\label{eq_global}
+\end{equation}
+Biểu thức trên đóng vai trò là phương trình tổng quát để lắp ghép trực tiếp ma trận độ dẫn toàn cục và vector nguồn cho toàn bộ hệ thống 3D-MBGRN.
+
+\subsection{Lắp ghép ma trận hệ thống}
+
+Tập hợp các phương trình cân bằng thông lượng tại từng nút độc lập tạo thành hệ phương trình phi tuyến toàn cục:
+\begin{equation}
+    \mathbf{G}(\mathbf{P}) \mathbf{P} = \mathbf{J}
+\end{equation}
+trong đó $\mathbf{G}(\mathbf{P})$ là ma trận độ dẫn toàn cục thưa, đối xứng và phụ thuộc vào vector thế từ nút $\mathbf{P}$ do hiện tượng bão hòa phi tuyến của vật liệu; $\mathbf{J}$ là vector nguồn tổng hợp.
+
+Để hệ phương trình có nghiệm duy nhất và triệt tiêu tính suy biến của ma trận độ dẫn, một nút bất kỳ trong tổng số $q_E$ nút được chọn làm nút tham chiếu với giá trị thế từ mặc định bằng không. Quá trình lắp ghép ma trận sẽ được thực hiện trên tập hợp các nút độc lập còn lại, tạo nên hệ phương trình có kích thước $(q_E - 1) \times (q_E - 1)$.
+
+Dựa trên chỉ số phẳng $f$, mỗi phương trình cân bằng từ thông tại nút $P_{i,j,k}$ được ánh xạ vào hàng $I = f$ tương ứng trong hệ ma trận toàn cục. Các phần tử trên hàng $I$ của ma trận $\mathbf{G}$ và vector nguồn $\mathbf{J}$ được xác định bởi:
+\begin{align}
+    G_{I,I} &= \sum_{\substack{s \in \{r, \theta, z\} \\ d \in \{0, 1\}}} G_{eq,s,d,i,j,k} \\
+    G_{I,J} &= -G_{eq,s,d,i,j,k} \\
+    J_I &= \sum_{\substack{s \in \{r, \theta, z\} \\ d \in \{0, 1\}}} (-1)^{d+1} \cdot J_{eq,s,d,i,j,k}
+\end{align}
+trong đó $J$ là chỉ số phẳng của nút lân cận kết nối qua nhánh $(s, d)$. Thuật toán lắp ghép ma trận độ dẫn $G$ và ma trận nguồn từ thông $J$ được trình bày trong argorithm ~\ref{alg:assembly}:
+
+\begin{algorithm}[htbp]
+\caption{3D-MRN Matrix Assembly Procedure}
+\label{alg:assembly}
+\begin{algorithmic}[1]
+\STATE \textbf{Input:} $N_r, N_\theta, N_z, G_{eq}, J_{eq}$
+\STATE \textbf{Output:} Sparse matrix $\mathbf{G}$, Vector $\mathbf{J}$
+\STATE Initialize $\mathbf{G} \leftarrow \text{Zeros}((q_E-1) \times (q_E-1))$
+\STATE Initialize $\mathbf{J} \leftarrow \text{Zeros}((q_E-1) \times 1)$
+\FOR{each node $f$ from $0$ to $q_E-1$}
+    \IF{$f$ is not $reference\_node$}
+        \STATE Identify independent row index $I$
+        \FOR{each axis $s \in \{r, \theta, z\}$ and direction $d \in \{0, 1\}$}
+            \STATE Identify neighbor node $f_{neighbor}$
+            \STATE $G_{I,I} \leftarrow G_{I,I} + G_{eq,s,d,i,j,k}$
+            \IF{$f_{neighbor}$ is independent}
+                \STATE Identify column index $J$
+                \STATE $G_{I,J} \leftarrow -G_{eq,s,d,i,j,k}$
+            \ENDIF
+            \STATE $J_I \leftarrow J_I + (-1)^{d+1} J_{eq,s,d,i,j,k}$
+        \ENDFOR
+    \ENDIF
+\ENDFOR
+\STATE \RETURN $\mathbf{G}, \mathbf{J}$
+\end{algorithmic}
+\end{algorithm}
+
+Ma trận độ dẫn toàn cục $\mathbf{G}$ mang đặc tính đối xứng ($G_{I,J} = G_{J,I}$) và có cấu trúc thưa dạng mẫu 7 điểm (7-point stencil). Trong không gian 3 chiều, phương trình bảo toàn thông lượng tại mỗi nút thế trung tâm $P_{i,j,k}$ chỉ bao gồm số hạng thế tại chính nút đó (tương ứng với phần tử trên đường chéo chính $G_{I,I}$) và mối liên kết với 6 nút lân cận theo 3 phương trực giao ($r, \theta, z$). Do đó, mỗi hàng trong ma trận $\mathbf{G}$ có tối đa 7 phần tử khác không. Tính đối xứng của ma trận được đảm bảo bởi tính tương hỗ của nhánh từ dẫn ghép nối giữa hai nút kề nhau:
+\begin{equation}
+    G_{I,J} = G_{J,I} = -\frac{1}{R_{s,d,i,j,k} + R_{s,1-d,i',j',k'}}
+\end{equation}
+Cấu trúc thưa với mẫu 7 điểm cố định này cho phép toàn bộ hệ thống $q_E - 1$ phương trình được lưu trữ tối ưu dưới định dạng nén CSR (Compressed Sparse Row), giúp tiết kiệm đáng kể dung lượng bộ nhớ và tăng tốc độ thực thi các phép nhân ma trận - vector trong quá trình giải lặp phi tuyến.
+
+\subsection{Bộ giải phi tuyến và phương pháp thư giãn vật liệu thích nghi}
+Hệ phương trình $\mathbf{G}(\mathbf{P})\mathbf{P} = \mathbf{J}$ mang tính phi tuyến do độ từ thẩm $\mu_r$ của vật liệu sắt từ phụ thuộc vào mật độ từ thông $\mathbf{B}$, vốn là hàm của vector thế nút $\mathbf{P}$. Để giải hệ phương trình này, phương pháp lặp điểm cố định kết hợp kỹ thuật thư giãn vật liệu thích nghi và cơ chế quay lui (backtracking) được áp dụng.
+
+Tại mỗi bước lặp $k$, vector số dư $\mathbf{r}^{(k-1)}$ và gia số thế nút $\Delta\mathbf{P}^{(k)}$ được xác định bởi:
+\begin{align}
+    \mathbf{r}^{(k-1)} &= \mathbf{G}(\mu_r^{(k-1)}) \mathbf{P}^{(k-1)} - \mathbf{J} \\
+    \Delta\mathbf{P}^{(k)} &= -\mathbf{G}^{-1}(\mu_r^{(k-1)}) \mathbf{r}^{(k-1)}
+\end{align}
+Nghiệm thế thử nghiệm được cập nhật trực tiếp theo:
+\begin{equation}
+    \mathbf{P}^{(k)} = \mathbf{P}^{(k-1)} + \Delta\mathbf{P}^{(k)}
+\end{equation}
+
+Độ từ thẩm $\mu_r^{(k)}$ được cập nhật theo hệ số thư giãn thích nghi $\alpha$:
+\begin{equation}
+    \mu_r^{(k)} = \mu_r^{(k-1)} + \alpha \left( \mu_{r,\text{calc}}(\mathbf{B}^{(k)}) - \mu_r^{(k-1)} \right)
+\end{equation}
+với $\mu_{r,\text{calc}}$ là độ từ thẩm tra cứu từ đặc tuyến $B\text{--}H$ dựa trên mật độ từ thông $\mathbf{B}^{(k)}$ tính từ $\mathbf{P}^{(k)}$.
+
+Sai số dư tương đối tại bước $k$ được chuẩn hóa theo vector nguồn:
+\begin{equation}
+    e^{(k)} = \frac{\|\mathbf{r}^{(k)}\|_2}{\|\mathbf{J}\|_2 + \varepsilon_0}
+\end{equation}
+Nếu sai số không giảm đủ nhanh ($e^{(k)} \ge 0.9 \cdot e^{(k-1)}$), cơ chế quay lui được kích hoạt: nghiệm được khôi phục về trạng thái tốt nhất đã lưu ($\mathbf{P}^{(k)} \leftarrow \mathbf{P}_{\text{best}}$) và hệ số thư giãn vật liệu bị suy giảm ($\alpha \leftarrow b \cdot \alpha$, với $0 < b < 1$). Thuật toán sẽ dừng khi thỏa mãn tiêu chí hội tụ ($e^{(k)} \le \epsilon$) hoặc khi phân kỳ nghiêm trọng ($e^{(k)} > 2 \cdot e_{\text{best}}$). Toàn bộ quy trình được tổng hợp trong Thuật toán~\ref{alg:nonlinear}.
+
+\begin{algorithm}[htbp]
+\caption{Bộ giải phi tuyến 3D-MBGRN với cơ chế quay lui thích nghi}
+\label{alg:nonlinear}
+\begin{algorithmic}[1]
+\STATE \textbf{Input:} $\mathbf{J}$, sai số đích $\epsilon$, hệ số suy giảm $b$, $\alpha_{\text{init}}$, $k_{\max}$
+\STATE \textbf{Initialize:} $\mu_r^{(0)} \leftarrow 1$, $\alpha \leftarrow \alpha_{\text{init}}$, $\mathbf{P}^{(0)} \leftarrow \mathbf{0}$, $\mathbf{P}_{\text{best}} \leftarrow \mathbf{0}$, $e_{\text{best}} \leftarrow \infty$
+\STATE Lắp ghép $\mathbf{G}(\mathbf{P}^{(0)})$, tính $\mathbf{r}^{(0)} = \mathbf{G}\mathbf{P}^{(0)} - \mathbf{J}$ và $e^{(0)} = \|\mathbf{r}^{(0)}\|_2 / (\|\mathbf{J}\|_2 + \varepsilon_0)$
+\FOR{$k = 1$ \TO $k_{\max}$}
+    \STATE Giải hệ số gia thế: $\Delta \mathbf{P} \leftarrow -\mathbf{G}^{-1} \mathbf{r}^{(k-1)}$
+    \STATE Cập nhật thế thử nghiệm: $\mathbf{P}^{(k)} \leftarrow \mathbf{P}^{(k-1)} + \Delta \mathbf{P}$
+    \STATE Cập nhật mạng, xác định $\mathbf{B}^{(k)}$ và tra cứu $\mu_{r,\text{calc}}$ từ đường cong $B\text{--}H$
+    \STATE Cập nhật độ từ thẩm thư giãn: $\mu_r^{(k)} \leftarrow \mu_r^{(k-1)} + \alpha (\mu_{r,\text{calc}} - \mu_r^{(k-1)})$
+    \STATE Tái lắp ghép $\mathbf{G}(\mu_r^{(k)})$, tính $\mathbf{r}^{(k)} = \mathbf{G}\mathbf{P}^{(k)} - \mathbf{J}$ và $e^{(k)}$
+    \IF{$e^{(k)} \le \epsilon$}
+        \STATE $\mathbf{P}_{\text{best}} \leftarrow \mathbf{P}^{(k)}$; \textbf{break}
+    \ENDIF
+    \IF{$e^{(k)} < 0.90 \cdot e^{(k-1)}$}
+        \IF{$e^{(k)} < e_{\text{best}}$}
+            \STATE $e_{\text{best}} \leftarrow e^{(k)}$; $\mathbf{P}_{\text{best}} \leftarrow \mathbf{P}^{(k)}$
+        \ENDIF
+    \ELSE
+        \STATE $\alpha \leftarrow b \cdot \alpha$ \COMMENT{Suy giảm hệ số thư giãn khi quay lui}
+        \STATE Khôi phục nghiệm: $\mathbf{P}^{(k)} \leftarrow \mathbf{P}_{\text{best}}$
+        \STATE Tái đánh giá hệ thống tại $\mathbf{P}_{\text{best}}$ với $\alpha$ mới
+    \ENDIF
+    \IF{$e^{(k)} > 2.0 \cdot e_{\text{best}}$}
+        \STATE \textbf{break} \COMMENT{Dừng khẩn cấp do phân kỳ nghiêm trọng}
+    \ENDIF
+\ENDFOR
+\STATE \textbf{Output:} Thế từ nút $\mathbf{P}_{\text{best}}$, mật độ từ thông $\mathbf{B}$
+\end{algorithmic}
+\end{algorithm}

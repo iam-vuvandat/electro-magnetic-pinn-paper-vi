@@ -1,0 +1,64 @@
+\section{Hậu xử lý}
+
+Sau khi bộ giải phi tuyến hội tụ và xác định được vector thế từ nút $\mathbf{P}$ cùng thông lượng trên từng nhánh nội tại, bước hậu xử lý được thực hiện nhằm trích xuất các đại lượng đặc tính điện từ toàn cục và cục bộ. Các kết quả này đóng vai trò quyết định trong việc đánh giá hiệu năng vận hành của máy điện.
+
+\subsection{Mật độ từ thông khe hở không khí}
+
+Để phục vụ việc phân tích dạng sóng trường từ từ thông nhánh, giá trị thông lượng trung bình chạy qua tâm của từng phần tử $E_{i,j,k}$ theo sáu nhánh nội tại cần được tổng hợp lại. Do mỗi phương tọa độ $s \in \{r, \theta, z\}$ gồm hai nhánh đi vào ($d=0$) và đi ra ($d=1$), giá trị thông lượng đại diện theo phương $s$ tại phần tử được tính theo trung bình cộng:
+\begin{equation}
+    \phi_{s,i,j,k} = \frac{\phi_{s,0,i,j,k} + \phi_{s,1,i,j,k}}{2}, \quad s \in \{r, \theta, z\}
+\end{equation}
+
+Dựa trên các giá trị thông lượng trung bình vừa thu được, mật độ từ thông đại diện theo các phương hướng tâm ($r$), tiếp tuyến ($\theta$) và dọc trục ($z$) được quy đổi bằng cách chia cho diện tích mặt cắt hình học tương ứng của phần tử:
+\begin{equation}
+    B_{s,i,j,k} = \frac{\phi_{s,i,j,k}}{A_s}, \quad s \in \{r, \theta, z\}
+\end{equation}
+
+Nhằm mục đích đánh giá mức độ bão hòa vật liệu cũng như vẽ biểu đồ phân bố từ trường 3D toàn không gian, biên độ mật độ từ thông tổng hợp tại tâm hình học của từng phần tử $E_{i,j,k}$ được xác định thông qua độ dài vector mật độ từ thông:
+\begin{equation}
+    B_{i,j,k} = \sqrt{B_{r,i,j,k}^2 + B_{\theta,i,j,k}^2 + B_{z,i,j,k}^2}
+\end{equation}
+
+\subsection{Từ thông liên kết và Sức phản điện động}
+
+\subsubsection{Từ thông liên kết}
+Trong bài toán phân tích máy điện quay, từ thông liên kết trên các pha dây quấn là đại lượng trung gian cốt lõi để xác định sức điện động và đặc tính điện áp. Để tiện lợi cho các thao tác đại số vector số trị, ba thành phần mật độ từ thông theo các trục tọa độ của phần tử $E_{i,j,k}$ trước hết được đóng gói thành một vector thông lượng không gian 3D:
+\begin{equation}
+    \mathbf{\Phi}_{i,j,k} = [\phi_{r,i,j,k}, \phi_{\theta,i,j,k}, \phi_{z,i,j,k}]^T
+\end{equation}
+
+Từ thông liên kết toàn cục đại diện cho hệ thống dây quấn $m$ pha $\mathbf{\Psi} = [\psi_1, \psi_2, \dots, \psi_m]^T$ được tính toán bằng cách tích phân tích điểm giữa vector phân bố cuộn dây và vector thông lượng trên toàn bộ miền tính toán. Trong mô hình 3D-MBGRN rời rạc, phép tích phân này được chuyển thành tổng đại số đóng góp từ tất cả các phần tử chứa dây quấn:
+\begin{equation}
+    \mathbf{\Psi} = k_s \cdot \sum_{i,j,k} \left( \mathbf{N}_{w,i,j,k}^T \cdot (\mathbf{n}_w \cdot \mathbf{\Phi}_{i,j,k}) \right)
+\end{equation}
+Trong đó, $\mathbf{n}_w$ đại diện cho vector pháp tuyến đơn vị xác định hướng đặt của cuộn dây, $\mathbf{N}_{w,i,j,k}$ là vector phân bố số vòng dây của các pha tại vị trí phần tử, và $k_s$ là hệ số đối xứng hình học được áp dụng để khôi phục chính xác tổng từ thông liên kết của toàn máy từ miền mô phỏng bán phần.
+
+\subsubsection{Sức phản điện động}
+Dựa trên định luật cảm ứng điện từ Faraday, sức phản điện động (Back EMF) xuất hiện trên các cuộn dây pha khi rotor quay được xác định bằng đạo hàm theo thời gian của vector từ thông liên kết pha:
+\begin{equation}
+    \mathbf{E} = \frac{d\mathbf{\Psi}}{dt}
+\end{equation}
+Trong giải thuật mô phỏng bước thời gian (transient time-stepping), phép lấy đạo hàm này được xấp xỉ số trị thông qua phương pháp sai số tiến hoặc sai số trung tâm giữa các bước thời gian kế tiếp.
+
+\subsection{Tính toán lực và Mô-men điện từ}
+
+Đánh giá lực tĩnh dọc trục $F_z$ và mô-men quay $T$ là một bước hậu xử lý quan trọng đối với các dòng máy điện hướng trục (AFPM). Quy trình tính toán trong nghiên cứu này dựa trên phương pháp Ma trận ứng suất Maxwell (Maxwell Stress Tensor - MST) nhờ ưu điểm không đòi hỏi tính toán đạo hàm năng lượng theo vị trí. Đầu tiên, một mặt kín tích phân $S_g$ được thiết lập nằm hoàn toàn trong lớp khe hở không khí và bao quanh bộ phận quay. Ma trận ứng suất Maxwell $\mathbf{T}$ tại mỗi điểm trên bề mặt $S_g$ được định nghĩa theo biểu thức tensor cơ bản:
+\begin{equation}
+    \mathbf{T} = \frac{1}{\mu_0} \left( \mathbf{B} \mathbf{B}^T - \frac{1}{2} B^2 \mathbf{I} \right)
+\end{equation}
+Trong đó, $\mathbf{B} = [B_r, B_\theta, B_z]^T$ là vector mật độ từ thông tại điểm khảo sát, $B = \|\mathbf{B}\|_2$ là độ lớn từ trường, và $\mathbf{I}$ là ma trận đơn vị $3 \times 3$. Các vector pháp tuyến đơn vị $\mathbf{n}$ ứng với các mặt cắt trong hệ tọa độ trụ lần lượt được thiết lập là $\mathbf{n}_r = [1, 0, 0]^T, \mathbf{n}_\theta = [0, 1, 0]^T$, và $\mathbf{n}_z = [0, 0, 1]^T$.
+
+Lực dọc trục $F_z$ và mô-men điện từ $T$ được xác định bằng cách lấy tích phân mặt của Tensor ứng suất Maxwell ($\mathbf{T}$) trên bề mặt kín $S_g$:
+\begin{equation}
+    F_z = \oint_{S_g} (\mathbf{T} \cdot \mathbf{n}) \cdot \mathbf{e}_z \, dS, \quad T = \oint_{S_g} r [(\mathbf{T} \cdot \mathbf{n}) \cdot \mathbf{e}_\theta] \, dS
+\end{equation}
+
+Để chuyển đổi bài toán tích phân liên tục sang dạng rời rạc thích hợp với cấu trúc sinh lưới lục diện của 3D-MBGRN, bề mặt $S_g$ được rời rạc hóa thành tập hợp $I_{S_g}$ gồm các mặt ranh giới phần tử lân cận. Lực dọc trục và mô-men quay tổng hợp được xấp xỉ bằng phép lấy tổng đại số trên tất cả các phần tử thuộc mặt tích phân:
+\begin{equation}
+    F_z = \sum_{(i,j,k) \in I_{S_g}} k_s \cdot [(\mathbf{T}_{i,j,k} \cdot \mathbf{n}) \cdot \mathbf{e}_z] \cdot A_{n,i,j,k}
+\end{equation}
+\begin{equation}
+    T = \sum_{(i,j,k) \in I_{S_g}} k_s \cdot r_{i,j,k} \cdot [(\mathbf{T}_{i,j,k} \cdot \mathbf{n}) \cdot \mathbf{e}_\theta] \cdot A_{n,i,j,k}
+\end{equation}
+
+Trong các công thức trên, $\mathbf{T}_{i,j,k}$ là giá trị ma trận ứng suất Maxwell được tính toán tại tâm mặt phần tử $(i, j, k)$. Các thông số $A_{n,i,j,k}$ và $r_{i,j,k}$ lần lượt đại diện cho diện tích pháp tuyến của mặt phần tử trên $S_g$ và bán kính khoảng cách từ trục quay $z$ đến tâm mặt phần tử đó. Tương tự như quy trình tính từ thông liên kết, hệ số đối xứng $k_s$ được nhân bổ sung nhằm khôi phục đầy đủ giá trị lực và mô-men tác động lên toàn bộ cấu trúc rotor thực tế.
